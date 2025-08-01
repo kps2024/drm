@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--Obtained from https://github.com/videojs/video.js-->
+    <!--uppkg version has no google analytic tracking-->
+    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
+    <script src="https://unpkg.com/video.js/dist/video.js"></script>
+
+    <!--Obtained from https://github.com/videojs/videojs-contrib-dash-->
+    <script src="//cdn.dashjs.org/latest/dash.all.debug.js"></script>
+    <script src="https://unpkg.com/videojs-contrib-dash/dist/videojs-dash.js"></script>
+
+</head>
+
+<body>
+    <video id="mv" class="video-js vjs-default-skin" controls width="640"></video>
+    <!--Line 23 is customer provided. Lines 29 & 35 can be obtained from EZDRM-->
+    <script>
+
+        function initPlayer() {
+            // Dispose old player if exists
+            if (videojs.getPlayer('mv')) {
+                videojs.getPlayer('mv').dispose();
+            }
+
+            // Initialize new player
+            let player = videojs('mv', {
+                autoplay: false,
+                controls: true
+            });
+
+            player.ready(function () {
+                player.src({
+                    src: 'https://gcdn-p20.teleuptv.net/DISCOVERY-DRM/index.mpd',
+                    type: 'application/dash+xml',
+                    keySystemOptions: [
+                        {
+                            name: 'com.widevine.alpha',
+                            options: {
+                                serverURL: 'https://widevine-dash.ezdrm.com/proxy?pX=ABCDE&email=abc@teleup.com'
+                            }
+                        },
+                        {
+                            name: 'com.microsoft.playready',
+                            options: {
+                                serverURL: 'https://playready.ezdrm.com/cency/preauth.aspx?pX=ABCDEW&email=abc@teleup.com'
+                            }
+                        }
+                    ]
+                });
+
+                player.play().catch(err => {
+                    console.warn('Autoplay blocked or error:', err);
+                });
+            });
+        }
+
+        // First load
+        initPlayer();
+
+        // Example: Replay button
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r') { // press 'r' to replay
+                initPlayer();
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
