@@ -1,9 +1,12 @@
 package net.teleuptv.drmauth.test;
 
 import java.util.Arrays;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.logging.Logger;
+
+import io.quarkus.logging.Log;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -21,62 +24,94 @@ public class PlayreadyAuth {
 
 
     @GET
-    public Response testPlayreadyAuth(@Context UriInfo uriInfo, @QueryParam("email") String emailParam) {
-        String playbackID = java.util.UUID.randomUUID().toString();
-        boolean authorized = false;
-        
+    public Response testPlayreadyAuth(@Context UriInfo uriInfo, @QueryParam("email") String emailParam, @QueryParam("CustomData") String CustomData) {
 
-        LOG.info("ping response for playready");
+        try{
+            String playbackID = java.util.UUID.randomUUID().toString();
+            boolean authorized = false;
+            String pX =null;
+            String email = null;
 
-        LOG.infof(
-            "\n--- Incoming Request ---\n" +
-            "Path       : %s\n" +
-            "Query Params:\n%s\n" +
-            "Playback ID   : %s\n" +
-            "------------------------",
-            uriInfo.getPath(),
-            uriInfo.getQueryParameters()
-                  .entrySet()
-                  .stream()
-                  .map(e -> String.format("  %s = %s", e.getKey(), String.join(",", e.getValue())))
-                  .reduce("", (a, b) -> a + b + "\n"),
-            playbackID
-        );
+            LOG.info("ping response for playready");
 
-        
-        if (emailParam == null || emailParam.isBlank()) {
-            LOG.info("Email is required! " + playbackID);
-            authorized = false;
-        } else {
+            LOG.infof(
+                "\n--- Incoming Request ---\n" +
+                "Path       : %s\n" +
+                "Query Params:\n%s\n" +
+                "Playback ID   : %s\n" +
+                "------------------------",
+                uriInfo.getPath(),
+                uriInfo.getQueryParameters()
+                    .entrySet()
+                    .stream()
+                    .map(e -> String.format("  %s = %s", e.getKey(), String.join(",", e.getValue())))
+                    .reduce("", (a, b) -> a + b + "\n"),
+                playbackID
+            );
 
-            Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+            //Email 
 
-            String email = Arrays.stream(emailParam.split("[|,]"))
-            .filter(s -> s.contains("@"))
-            .findFirst()
-            .orElse("N/A");
-
-            if (EMAIL_PATTERN.matcher(email).matches()) {
-                LOG.info("Email ok: " + email);
-                authorized = true;
-            } else {
-                LOG.warn("Invalid Email: " + email);
+            if (emailParam == null || emailParam.isBlank()) {
+                LOG.info("Email is required! " + playbackID);
                 authorized = false;
+            } else {
+
+                Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+                String emaill = Arrays.stream(emailParam.split("[|,]"))
+                .filter(s -> s.contains("@"))
+                .findFirst()
+                .orElse("N/A");
+
+                if (EMAIL_PATTERN.matcher(emaill).matches()) {
+                    LOG.info("Email ok: " + emaill);
+                    authorized = true;
+                } else {
+                    LOG.warn("Invalid Email: " + emaill);
+                    authorized = false;
+                }
             }
-        }
 
-        if (authorized) {
-            LOG.info("Request allowed " + playbackID);
-            return Response.ok()
-                           .entity("{\"result\":\"allowed\"}")
-                           .build();
-        } else {
-            LOG.info("Request denied " + playbackID );
-            return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"result\":\"denied\"}")
-                           .build();
-        }
+            //pX value
+            if (CustomData == null || CustomData.isBlank()) {
+                LOG.info("CustomData(pX) is required! " + playbackID);
+                authorized = false;
+            } else {
+                //pXString = CustomData.trim().replace("|", "").trim();
+                
+                Pattern pXPattern = Pattern.compile("pX=([A-Za-z0-9]+)");
+                Matcher pXMatcher = pXPattern.matcher(CustomData);
+                if (pXMatcher.find()) {
+                    pX = pXMatcher.group(1);
+                    Log.info("First pX: " + pX);
+                    authorized = true;
+                }
 
-        
+                //Email
+                // Regex pattern to match email values
+                Pattern emailPattern = Pattern.compile("email=([\\w.%+-]+@[\\w.-]+\\.[A-Za-z]{2,})");
+                Matcher emailMatcher = emailPattern.matcher(CustomData);
+
+                if (emailMatcher.find() && pXMatcher.find()) {
+                    email = emailMatcher.group(1);
+                    pX = pXMatcher.group(1);
+                    Log.info("First pX: " + pX + ", First email: "+email);
+                    authorized = true;
+                }
+            }
+
+            if (authorized) {
+                LOG.info("Request allowed " + playbackID);
+                return Response.ok()
+                            .entity("pX="+pX)
+                            .build();             // accept response is 200 OK and the return value is pX=A359F2
+            } else {
+                LOG.info("Request denied " + playbackID );
+                return Response.ok().build();       // deny response is 200 OK only, not return value
+            }
+        } catch (Exception e){
+            Log.error("Error occured: " + e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }        
     }
 }
