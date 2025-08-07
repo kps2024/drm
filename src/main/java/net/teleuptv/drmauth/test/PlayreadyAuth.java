@@ -98,16 +98,16 @@ public class PlayreadyAuth {
             }
 
             if (authorized) {
-                LOG.info("Request allowed " + playbackID);
+                LOG.info("Playback request accepted for " + playbackID);
                 return Response.ok()
                             .entity("pX="+pX)
                             .build();             // accept response is 200 OK and the return value is pX=A359F2
             } else {
-                LOG.info("Request denied " + playbackID );
+                LOG.info("Playback request denied for " + playbackID );
                 return Response.ok().build();       // deny response is 200 OK only, not return value
             }
         } catch (Exception e){
-            Log.error("Error occured: " + e);
+            Log.error("Playback request denied and error occured : " + e);
             //return Response.status(Response.Status.BAD_REQUEST).build();
             return Response.ok().build();   // deny response is 200 OK only, not return value
         }        

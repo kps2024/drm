@@ -68,15 +68,15 @@ public class WidevineAuth {
             }
 
             if (authorized) {
-                LOG.info("Request allowed " + playbackID);
+                LOG.info("Playback request accepted for " + playbackID);
                 return Response.ok().entity("play=true").build();
             } else {
-                LOG.info("Request denied " + playbackID );
+                LOG.info("Playback request denied for " + playbackID );
                 return Response.ok().entity("play=false").build();
             }
 
         } catch(Exception e){
-            Log.error("Error exception : " + e);
+            Log.error("Playback request denied and error occured : " + e);
             return Response.ok().entity("play=false").build();
         }
         
