@@ -49,7 +49,7 @@ public class PlayreadyAuth {
                 playbackID
             );
 
-            //Email 
+            //Only Email 
 
             if (emailParam == null || emailParam.isBlank()) {
                 LOG.info("Email is required! " + playbackID);
@@ -72,20 +72,15 @@ public class PlayreadyAuth {
                 }
             }
 
-            //pX value
+            //Both email and pX 
             if (CustomData == null || CustomData.isBlank()) {
                 LOG.info("CustomData(pX) is required! " + playbackID);
                 authorized = false;
             } else {
-                //pXString = CustomData.trim().replace("|", "").trim();
-                
+                //pX
+                // Regex pattern to match pX values
                 Pattern pXPattern = Pattern.compile("pX=([A-Za-z0-9]+)");
                 Matcher pXMatcher = pXPattern.matcher(CustomData);
-                if (pXMatcher.find()) {
-                    pX = pXMatcher.group(1);
-                    Log.info("First pX: " + pX);
-                    authorized = true;
-                }
 
                 //Email
                 // Regex pattern to match email values
@@ -97,6 +92,8 @@ public class PlayreadyAuth {
                     pX = pXMatcher.group(1);
                     Log.info("First pX: " + pX + ", First email: "+email);
                     authorized = true;
+                } else {
+                    authorized = false;
                 }
             }
 
@@ -111,7 +108,8 @@ public class PlayreadyAuth {
             }
         } catch (Exception e){
             Log.error("Error occured: " + e);
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            //return Response.status(Response.Status.BAD_REQUEST).build();
+            return Response.ok().build();   // deny response is 200 OK only, not return value
         }        
     }
 }
