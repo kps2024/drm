@@ -25,14 +25,16 @@ public class PlayreadyAuth {
 
     @GET
     public Response testPlayreadyAuth(@Context UriInfo uriInfo, @QueryParam("email") String emailParam, @QueryParam("CustomData") String CustomData) {
-        LOG.info("ping response for playready");
-        try {
+
+        try{
             String playbackID = java.util.UUID.randomUUID().toString();
             boolean authorized = false;
             String pX =null;
             String email = null;
             boolean pxPresent = false;
             boolean emailPresent = false;
+
+            LOG.info("ping response for playready");
 
             LOG.infof(
                 "\n--- Incoming Request ---\n" +
@@ -48,6 +50,29 @@ public class PlayreadyAuth {
                     .reduce("", (a, b) -> a + b + "\n"),
                 playbackID
             );
+
+            //Only Email 
+
+            if (emailParam == null || emailParam.isBlank()) {
+                LOG.info("Email is required! " + playbackID);
+                authorized = false;
+            } else {
+
+                Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+                String emaill = Arrays.stream(emailParam.split("[|,]"))
+                .filter(s -> s.contains("@"))
+                .findFirst()
+                .orElse("N/A");
+
+                if (EMAIL_PATTERN.matcher(emaill).matches()) {
+                    LOG.info("Email ok: " + emaill);
+                    authorized = true;
+                } else {
+                    LOG.warn("Invalid Email: " + emaill);
+                    authorized = false;
+                }
+            }
 
             //Both email and pX 
             if (CustomData == null || CustomData.isBlank()) {
@@ -87,14 +112,41 @@ public class PlayreadyAuth {
                         LOG.warn("Invalid Email: " + emaill);
                     }
                 }
+
+                if(pxPresent && emailPresent) {
+                    authorized = true;
+                } else {
+                    authorized = false;
+                }
+                
+                if (emailMatcher.find() && pXMatcher.find()) {
+                    //Both email and pX present
+                    email = emailMatcher.group(1);
+                    pX = pXMatcher.group(1);
+                    Log.info("First pX: " + pX + ", First email: "+email);
+                    authorized = true;
+                } else if(!emailMatcher.find()){
+                    // email absent
+                    Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+                    String emaill = Arrays.stream(emailParam.split("[|,]"))
+                        .filter(s -> s.contains("@"))
+                        .findFirst()
+                        .orElse("N/A");
+
+                    if (EMAIL_PATTERN.matcher(emaill).matches()) {
+                        LOG.info("Email ok: " + emaill);
+                        authorized = true;
+                    } else {
+                        LOG.warn("Invalid Email: " + emaill);
+                        authorized = false;
+                    }
+
+
+                    authorized = false;
+                }
             }
 
-            if(pxPresent && emailPresent) {
-                authorized = true;
-            } else {
-                authorized = false;
-            }
-                
             if (authorized) {
                 LOG.info("Playback request accepted for " + playbackID);
                 return Response.ok()
@@ -104,9 +156,9 @@ public class PlayreadyAuth {
                 LOG.info("Playback request denied for " + playbackID );
                 return Response.ok().build();       // deny response is 200 OK only, not return value
             }
-
         } catch (Exception e){
             Log.error("Playback request denied and error occured : " + e);
+            //return Response.status(Response.Status.BAD_REQUEST).build();
             return Response.ok().build();   // deny response is 200 OK only, not return value
         }        
     }
