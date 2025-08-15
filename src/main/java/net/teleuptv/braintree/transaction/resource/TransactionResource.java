@@ -38,11 +38,11 @@ public class TransactionResource {
             if(dto!=null) {
                 //Processing the Transaction sale
                 Result<Transaction> result = serviceTransaction.NewCustomerTransactionSale(dto);
-                return (result.isSuccess()) ? Response.ok().entity(result).build() : Response.status(Response.Status.BAD_REQUEST).entity(result).build();
+                return result.isSuccess() ? Response.ok().entity(result.getMessage()).build() : Response.status(Response.Status.BAD_REQUEST).entity(result.getMessage()).build();
             } else {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Invalid request body").build();
             }
-            
+        
         } catch(Exception e){
             LOG.error("Transaction sale error: "+e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error").build();

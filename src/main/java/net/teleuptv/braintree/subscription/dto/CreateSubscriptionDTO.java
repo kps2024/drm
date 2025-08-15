@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateSubscriptionRequestDTO {
+public class CreateSubscriptionDTO {
 
-    private String paymentToken;
+    private String paymentMethodNonceFromClient;
     private String planId;
-    private String merchantAccountId;
-
 }

@@ -37,7 +37,7 @@ public class TransactionService {
         
         Result<Transaction> result = braintreeProvider.gateway().transaction().sale(request);
         LOG.debug("Transaction result: " + result);
-        LOG.info("Transaction completed.");
+        LOG.debug("Transaction process completed.");
         return result; 
     }
 
@@ -65,7 +65,7 @@ public class TransactionService {
             
             Result<Transaction> result = braintreeProvider.gateway().transaction().sale(request);
             LOG.debug("Transaction result: " + result);
-            LOG.info("Transaction completed.");
+            LOG.info("Transaction process completed.");
             return result;
     }
 }

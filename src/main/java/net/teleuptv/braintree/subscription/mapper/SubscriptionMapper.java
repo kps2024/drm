@@ -6,15 +6,15 @@ import org.mapstruct.factory.Mappers;
 
 import com.braintreegateway.SubscriptionRequest;
 
-import net.teleuptv.braintree.subscription.dto.CreateSubscriptionRequestDTO;
+import net.teleuptv.braintree.subscription.dto.CreateSubscriptionDTO;
 
 @Mapper
 public interface SubscriptionMapper {
     SubscriptionMapper INSTANCE = Mappers.getMapper(SubscriptionMapper.class);
 
-    @Mapping(source = "paymentToken", target = "paymentMethodToken")
+    @Mapping(source = "paymentMethodNonceFromClient", target = "paymentMethodNonceFromClient")
     @Mapping(source = "planId", target = "planId")
-    SubscriptionRequest toSubscriptionRequest(CreateSubscriptionRequestDTO requestDTO);
+    SubscriptionRequest toSubscriptionRequest(CreateSubscriptionDTO requestDTO);
 
 
 }
