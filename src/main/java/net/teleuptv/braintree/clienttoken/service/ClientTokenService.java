@@ -1,5 +1,6 @@
 package net.teleuptv.braintree.clienttoken.service;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import com.braintreegateway.ClientTokenRequest;
@@ -17,6 +18,9 @@ public class ClientTokenService {
     @Inject
     BraintreeProvider braintreeProvider;
 
+    @ConfigProperty(name = "braintree.merchant-id")
+    String merchantId;
+
     public String generateClientToken(ClientTokenDTO dto, Boolean hasCustomerId){
 
         ClientTokenRequest clientTokenRequest;
@@ -24,10 +28,10 @@ public class ClientTokenService {
         if(hasCustomerId){
             clientTokenRequest = new ClientTokenRequest()
                 .customerId(dto.getCustomerID())
-                .merchantAccountId(dto.getMerchantAccountId());
+                .merchantAccountId(merchantId);
         } else {
             clientTokenRequest = new ClientTokenRequest()
-                .merchantAccountId(dto.getMerchantAccountId());
+                .merchantAccountId(merchantId);
         }
 
         if(clientTokenRequest != null){
@@ -35,9 +39,6 @@ public class ClientTokenService {
         } else {
             LOG.info("Customer ID or Merchant Account ID is invalid! ");
             return null;
-
         }
-        
-        
     }
 }

@@ -1,4 +1,4 @@
-package net.teleuptv.braintree.subscription.resources;
+package net.teleuptv.braintree.subscription.resource;
 
 import org.jboss.logging.Logger;
 
@@ -8,6 +8,7 @@ import com.braintreegateway.Subscription;
 import com.braintreegateway.SubscriptionSearchRequest;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -26,7 +27,7 @@ public class SubscriptionResource {
     BraintreeProvider braintreeProvider;
 
     @Inject
-    SubscriptionService service;
+    SubscriptionService subscriptionService;
 
     @GET
     @Path("/search/status")
@@ -56,7 +57,7 @@ public class SubscriptionResource {
 
     @POST
     @Path("/create")
-    public Response Create(CreateSubscriptionRequestDTO dto){
+    public Response CreateSubscription(@Valid CreateSubscriptionRequestDTO dto){
         LOG.info("Create Subscription");
         try{
             //Validate dto
@@ -65,7 +66,7 @@ public class SubscriptionResource {
             }
 
             //Process the subscription
-            Result<Subscription> result = service.create(dto);
+            Result<Subscription> result = subscriptionService.create(dto);
             return Response.ok().entity(result).build(); 
         } catch(Exception e){
             LOG.error("Create subscription error: "+e);

@@ -2,6 +2,7 @@ package net.teleuptv.braintree.clienttoken.resource;
 
 import org.jboss.logging.Logger;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -28,7 +29,7 @@ public class ClientTokenResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)
     //Generate Client Token
-    public Response generateClientToken(ClientTokenDTO dto){
+    public Response generateClientToken(@Valid ClientTokenDTO dto){
         try {
             LOG.info("Generate Client Token");
             Boolean hasCustomerId = false;
