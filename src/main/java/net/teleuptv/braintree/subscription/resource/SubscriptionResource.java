@@ -96,4 +96,6 @@ public class SubscriptionResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error").build();
         }        
     }
+
+    
 }

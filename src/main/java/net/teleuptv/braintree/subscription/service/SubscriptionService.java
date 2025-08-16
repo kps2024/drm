@@ -1,7 +1,5 @@
 package net.teleuptv.braintree.subscription.service;
 
-import java.util.ArrayList;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -46,5 +44,14 @@ public class SubscriptionService {
         LOG.info("Subscription result: " + result.getMessage());
         LOG.debug("Subcription process completed.");
         return result;
+    }
+
+    public Result<Subscription> newCustomerPlanJourneyCreateSubscription(String paymentToken, String planId){
+            SubscriptionRequest request = new SubscriptionRequest()
+                    .paymentMethodToken(paymentToken)
+                    .planId(planId);
+
+            Result<Subscription> result = braintreeProvider.gateway().subscription().create(request);
+            return result;
     }
 }

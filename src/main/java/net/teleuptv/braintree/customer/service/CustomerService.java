@@ -1,17 +1,26 @@
 package net.teleuptv.braintree.customer.service;
 
+import java.util.ArrayList;
+
 import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 import com.braintreegateway.Customer;
 import com.braintreegateway.CustomerRequest;
 import com.braintreegateway.Result;
+import com.braintreegateway.Subscription;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.Response;
 import net.teleuptv.braintree.customer.dto.CreateCustomerDTO;
+import net.teleuptv.braintree.customer.dto.NewCustomerPlanJourney;
+import net.teleuptv.braintree.customer.model.DomainAppCustomer;
 import net.teleuptv.braintree.customer.repository.CustomerRepository;
+import net.teleuptv.braintree.customer.repository.DomainAppCustomerRepository;
 import net.teleuptv.braintree.gateway.BraintreeProvider;
+import net.teleuptv.common.AppResponse;
 
 @ApplicationScoped
 public class CustomerService {
@@ -21,6 +30,9 @@ public class CustomerService {
 
     @Inject
     CustomerRepository customerRepository;
+
+    @Inject
+    DomainAppCustomerRepository domainAppCustomerRepository;
 
     private static final Logger LOG = Logger.getLogger(CustomerService.class);
     
@@ -53,7 +65,6 @@ public class CustomerService {
                     customer.setEmail(dto.getEmail());
                     customer.setPhone(dto.getPhone());
                     customerRepository.persist(customer);
-                    customerRepository.flush(); // Forces the INSERT now. Use flush() if you want the DB to confirm immediately.
 
                     LOG.info("Customer has been created at Domain application successfully. Customer Id :" + customer.getId());
                     return result;
@@ -65,5 +76,40 @@ public class CustomerService {
             return null;
         }
 
+    }
+
+    public Result<Customer> newCustomerPlanJourneyCreateCustomer(NewCustomerPlanJourney dto){
+        CustomerRequest request = new CustomerRequest()
+                    .email(dto.getEmail())
+                    .paymentMethodNonce(dto.getPaymentMethodNonce());
+                
+                Result<Customer> result = braintreeProvider.gateway().customer().create(request);
+                
+                return result;         
+    }
+
+    @Transactional
+    public void createCustomerInDomainApp(NewCustomerPlanJourney dto, Result<Customer> customerResult, Result<Subscription> subscriptionResult, String trackingId){
+                
+                MDC.put("trackingId", trackingId);
+
+                DomainAppCustomer dACustomer = new DomainAppCustomer();
+                dACustomer.setBtCustomerId(customerResult.getTarget().getId());
+                dACustomer.setEmail(dto.getEmail());
+
+                if(dACustomer.getBtSubscriptionId() == null){
+                    dACustomer.setBtSubscriptionId(new ArrayList<>());
+                }
+                dACustomer.getBtSubscriptionId().add(subscriptionResult.getTarget().getId());
+
+                if(dACustomer.getBtPlanId() == null){
+                    dACustomer.setBtPlanId(new ArrayList<>());
+                }
+                dACustomer.getBtPlanId().add(dto.getPlanId());
+                domainAppCustomerRepository.persist(dACustomer); 
+                
+                LOG.info("Customer details has been upated in the domain app customer model " + dACustomer.getId());
+                MDC.clear();
+                
     }
 }

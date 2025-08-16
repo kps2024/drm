@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class ClientTokenDTO {
 
     private String customerID;
-    private String merchantAccountId;
 }

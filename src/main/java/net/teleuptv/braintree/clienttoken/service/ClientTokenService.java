@@ -21,18 +21,21 @@ public class ClientTokenService {
     @ConfigProperty(name = "braintree.merchant-id")
     String merchantId;
 
-    public String generateClientToken(ClientTokenDTO dto, Boolean hasCustomerId){
-
+    // public String generateClientToken(ClientTokenDTO dto, Boolean hasCustomerId){
+    public String generateClientToken(){
         ClientTokenRequest clientTokenRequest;
 
-        if(hasCustomerId){
-            clientTokenRequest = new ClientTokenRequest()
-                .customerId(dto.getCustomerID())
-                .merchantAccountId(merchantId);
-        } else {
-            clientTokenRequest = new ClientTokenRequest()
-                .merchantAccountId(merchantId);
-        }
+        // if(hasCustomerId){
+        //     clientTokenRequest = new ClientTokenRequest()
+        //         .customerId(dto.getCustomerID())
+        //         .merchantAccountId(merchantId);
+        // } else {
+        //     clientTokenRequest = new ClientTokenRequest()
+        //         .merchantAccountId(merchantId);
+        // }
+
+        clientTokenRequest = new ClientTokenRequest()
+                 .merchantAccountId(merchantId);
 
         if(clientTokenRequest != null){
             return braintreeProvider.gateway().clientToken().generate(clientTokenRequest);
